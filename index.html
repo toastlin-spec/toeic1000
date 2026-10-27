@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f6f5e">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="多益單字">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>多益 1000 單字</title>
+<style>
+:root{
+  --bg:#f4f2ec; --card:#ffffff; --ink:#1d2733; --sub:#5f6a76; --line:#e2ded4; --seg:#e9e5dc;
+  --accent:#2f6f5e; --accent-ink:#ffffff; --accent-soft:#e1eee8; --mark:#ffe08a; --danger:#b4433a;
+  --shadow:0 1px 2px rgba(20,30,40,.05),0 8px 24px rgba(20,30,40,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#13171c; --card:#1d232a; --ink:#e8ecf0; --sub:#9aa5b1; --line:#2d353e; --seg:#252c34;
+    --accent:#62b49c; --accent-ink:#0e1a16; --accent-soft:#1f3832; --mark:#7a6420; --danger:#e07a70;
+    --shadow:0 1px 2px rgba(0,0,0,.3);
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:16px/1.5 -apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  -webkit-text-size-adjust:100%;overscroll-behavior-y:none}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+main{max-width:560px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom))}
+[lang=en]{font-family:Georgia,"Times New Roman",serif}
+.en-ui{font-family:inherit}
+
+/* top bar */
+.bar{display:flex;align-items:center;gap:8px;margin:0 -6px 12px;min-height:48px}
+.bar-title{flex:1;text-align:center;font-weight:600;line-height:1.25}
+.bar-title small{display:block;font-weight:400;font-size:13px;color:var(--sub)}
+.icon-btn{width:44px;height:44px;border:0;border-radius:12px;background:transparent;display:grid;place-items:center;color:var(--ink);flex:none}
+.icon-btn:active{background:var(--seg)}
+.icon-btn:empty{visibility:hidden}
+
+/* home */
+.hero{padding:8px 2px 4px}
+.hero h1{margin:0;font-size:26px;letter-spacing:.5px}
+.hero p{margin:2px 0 10px;color:var(--sub)}
+.meter{height:6px;border-radius:3px;background:var(--seg);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+.resume{display:flex;align-items:center;gap:12px;margin:16px 0;padding:14px 16px;background:var(--accent);color:var(--accent-ink);border-radius:16px;box-shadow:var(--shadow)}
+.resume .r-txt{flex:1;min-width:0}
+.resume small{display:block;opacity:.85;font-size:13px}
+.resume b{font-size:22px;font-weight:600}
+.resume .chev{font-size:24px;opacity:.9}
+h2.title{font-size:22px;margin:6px 2px 14px}
+.sec-label{font-size:13px;color:var(--sub);margin:18px 2px 8px}
+
+.seg{display:flex;gap:4px;padding:4px;background:var(--seg);border-radius:12px}
+.seg button{flex:1;min-height:40px;border:0;background:transparent;border-radius:9px;padding:6px 4px;color:var(--sub);line-height:1.2}
+.seg button.on{background:var(--card);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg button small{display:block;font-size:11px;font-weight:400;color:var(--sub);margin-top:2px}
+
+.groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.grp{position:relative;display:block;background:var(--card);border-radius:14px;padding:12px 12px 14px;box-shadow:var(--shadow)}
+.grp b{font-size:15px}
+.grp span{display:block;font-size:14px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:2px 0 10px}
+.grp em{position:absolute;top:12px;right:12px;font-style:normal;font-size:12px;color:var(--sub)}
+.grp.done em{color:var(--accent);font-weight:700}
+.grp .meter{height:4px}
+.grp:active{transform:scale(.98)}
+
+/* card */
+.dots{display:flex;justify-content:center;gap:6px;margin:0 0 12px}
+.dots button{width:22px;height:22px;border:0;padding:0;background:transparent;display:grid;place-items:center}
+.dots button i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dots button.seen i{background:var(--accent);opacity:.45}
+.dots button.cur i{background:var(--accent);opacity:1;width:20px;border-radius:4px}
+.card{background:var(--card);border-radius:20px;padding:22px 20px 20px;box-shadow:var(--shadow);touch-action:pan-y}
+.w-row{display:flex;align-items:center;gap:12px}
+.word{flex:1;min-width:0;margin:0;font-size:38px;line-height:1.15;font-weight:600;overflow-wrap:break-word}
+.say{width:48px;height:48px;flex:none;border:0;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;transition:transform .1s}
+.say:active{transform:scale(.92)}
+.senses{margin-top:12px;font-size:18px}
+.senses div+div{margin-top:4px}
+.pos{display:inline-block;min-width:40px;text-align:center;font-size:13px;font-weight:600;color:var(--accent);border:1.5px solid currentColor;border-radius:6px;padding:0 6px;margin-right:10px;vertical-align:2px;font-family:Georgia,serif;font-style:italic}
+.ex{display:flex;gap:12px;align-items:flex-start;margin-top:20px;padding-top:18px;border-top:1px dashed var(--line)}
+.ex .en{flex:1;margin:0;font-size:19px;line-height:1.55}
+mark{background:linear-gradient(transparent 58%,var(--mark) 58%);color:inherit;font-weight:700;padding:0 1px}
+.zh{margin:10px 0 0;color:var(--sub);font-size:16px}
+.speaking .say{background:var(--accent);color:var(--accent-ink);animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px var(--accent-soft)}}
+.speaking .word,.speaking.senses,.speaking .en{color:var(--accent)}
+.speaking .en mark{color:var(--ink)}
+
+.speed{display:flex;align-items:center;gap:10px;margin:16px 0 0}
+.speed>span{font-size:14px;color:var(--sub);flex:none}
+.speed .seg{flex:1}
+.pager{display:flex;gap:10px;margin-top:14px}
+.pager button{flex:1;min-height:52px;border:0;border-radius:14px;background:var(--card);box-shadow:var(--shadow);font-weight:600}
+.pager button:disabled{opacity:.35}
+.pager button:active:not(:disabled){transform:scale(.98)}
+
+/* play */
+.panel{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px}
+.panel h3{margin:0 0 10px;font-size:15px}
+.panel p{margin:6px 0}
+.field{display:block;margin-top:12px;font-size:14px;color:var(--sub)}
+.field select{display:block;width:100%;margin-top:6px;min-height:46px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px}
+.opt+.opt{border-top:1px solid var(--line)}
+.opt .seg{flex:0 0 auto;min-width:150px}
+.opt .seg button{min-width:44px}
+.sw{position:relative;width:52px;height:32px;border:0;border-radius:16px;background:var(--line);flex:none;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.sw.on{background:var(--accent)}
+.sw.on::after{transform:translateX(20px)}
+.btn{display:block;width:100%;min-height:52px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:17px;margin-top:4px}
+.btn.ghost{background:var(--accent-soft);color:var(--accent)}
+.btn:active{transform:scale(.99)}
+.note{font-size:13px;color:var(--sub)}
+.warn{color:var(--danger)}
+.prog{display:flex;align-items:center;gap:12px;margin:-4px 2px 12px;font-size:14px;color:var(--sub)}
+.prog .meter{flex:1}
+.controls{display:flex;justify-content:center;align-items:center;gap:22px;margin:18px 0 4px}
+.controls button{width:58px;height:58px;border:0;border-radius:50%;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;color:var(--ink)}
+.controls button.big{width:78px;height:78px;background:var(--accent);color:var(--accent-ink)}
+.controls button:active{transform:scale(.94)}
+.status{text-align:center;font-size:13px;color:var(--sub);min-height:20px;margin-top:6px}
+
+/* search */
+.search{position:sticky;top:0;z-index:2;background:var(--bg);padding:6px 0 10px}
+.search input{width:100%;min-height:50px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-size:17px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.row{display:flex;align-items:baseline;gap:10px;padding:12px 4px;border-bottom:1px solid var(--line)}
+.row b{font-size:18px;font-weight:600}
+.row span{flex:1;min-width:0;color:var(--sub);font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row small{color:var(--sub);font-size:12px;flex:none}
+.hint{color:var(--sub);text-align:center;margin-top:40px}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.row-btns button{flex:1;min-height:44px;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:0 10px}
+.row-btns .danger{color:var(--danger)}
+
+/* tabs */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:center;background:color-mix(in srgb,var(--card) 92%,transparent);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabs a{position:relative;flex:1;max-width:140px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 6px;font-size:12px;color:var(--sub)}
+.tabs a.on{color:var(--accent);font-weight:600}
+.tabs .live{position:absolute;top:6px;right:calc(50% - 18px);width:8px;height:8px;border-radius:50%;background:var(--danger);display:none}
+.tabs .live.show{display:block}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center;z-index:9}
+.toast.show{opacity:.95}
+</style>
+</head>
+<body>
+<main id="view"></main>
+<nav class="tabs">
+  <a href="#/" data-tab="home"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/><path d="M8 7h7"/></svg>單字</a>
+  <a href="#/play" data-tab="play"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z" fill="currentColor"/></svg>自動播放<i class="live"></i></a>
+  <a href="#/search" data-tab="search"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>搜尋</a>
+  <a href="#/settings" data-tab="settings"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>設定</a>
+</nav>
+<div class="toast" id="toast"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<script src="words.js"></script>
+<script>
+'use strict';
+const W = window.WORDS, N = W.length;
+const LV = [['Lv.1', '基礎'], ['Lv.2', '進階'], ['Lv.3', '中級'], ['Lv.4', '高階']];
+const RATES = [0.5, 0.8, 1, 1.2];
+const KEY = 'toeic1000.v1';
+const $view = document.getElementById('view');
+
+const ICON = {
+  spk: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+  back: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg>',
+  play: '<svg width="26" height="26" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>',
+  pause: '<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1"/><rect x="13.5" y="5" width="4" height="14" rx="1"/></svg>',
+  prev: '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17 6v12l-8.5-6z"/><rect x="6" y="6" width="2.2" height="12" rx="1"/></svg>',
+  next: '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 6v12l8.5-6z"/><rect x="15.8" y="6" width="2.2" height="12" rx="1"/></svg>',
+  close: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+};
+
+/* ---------- 儲存 ---------- */
+function load() {
+  let d = {};
+  try { d = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+  return {
+    viewed: (typeof d.viewed === 'string' && d.viewed.length === N) ? d.viewed : '0'.repeat(N),
+    last: Number.isInteger(d.last) && d.last >= 0 && d.last < N ? d.last : 0,
+    uiLevel: Number.isInteger(d.uiLevel) ? d.uiLevel : null,
+    s: Object.assign({ rate: 1, accent: 'us', voice: '' }, d.s),
+    p: Object.assign({ mode: 'group', level: 0, group: 0, reps: 1, zh: true, ex: true, gap: 1, loop: false }, d.p),
+    resume: d.resume || null,
+  };
+}
+let D = load();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} }
+function markViewed(i) { if (D.viewed[i] !== '1') D.viewed = D.viewed.slice(0, i) + '1' + D.viewed.slice(i + 1); }
+function countViewed(a, b) { let c = 0; for (let i = a; i <= b; i++) if (D.viewed[i] === '1') c++; return c; }
+
+/* ---------- 小工具 ---------- */
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const hl = s => esc(s).replace(/\{([^}]*)\}/g, '<mark>$1</mark>');
+const plain = s => s.replace(/[{}]/g, '');
+const groupOf = i => Math.floor(i / 10);
+const levelOf = i => Math.floor(i / 250);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const rateLabel = r => (r === 1 ? '1.0' : String(r)) + '×';
+const defText = w => w.s.map(s => s[1]).join('，').replace(/[；;]/g, '，').replace(/[（）()]/g, '');
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ---------- 語音 ---------- */
+const TTS = {
+  ok: 'speechSynthesis' in window,
+  voices: [],
+  load() { if (this.ok) { const v = speechSynthesis.getVoices(); if (v.length) this.voices = v; } },
+  lang: v => v.lang.replace('_', '-').toLowerCase(),
+  enList() {
+    const want = D.s.accent === 'uk' ? 'en-gb' : 'en-us';
+    return this.voices.filter(v => this.lang(v).startsWith(want));
+  },
+  en() {
+    const all = this.voices.filter(v => this.lang(v).startsWith('en'));
+    if (D.s.voice) { const v = all.find(v => v.voiceURI === D.s.voice); if (v) return v; }
+    const list = this.enList();
+    const pref = D.s.accent === 'uk'
+      ? /Daniel|Google UK English Female|Google UK English|Libby|Sonia|Serena|Kate|Arthur/i
+      : /Samantha|Google US English|Aria|Jenny|Ava|Allison|Michelle|Zira/i;
+    return list.find(v => pref.test(v.name)) || list.find(v => v.localService) || list[0] || all[0] || null;
+  },
+  zh() {
+    const z = this.voices.filter(v => this.lang(v).startsWith('zh') || this.lang(v).startsWith('cmn'));
+    return z.find(v => /zh-tw|hant/.test(this.lang(v))) || z.find(v => /taiwan|台灣|國語/i.test(v.name)) || z.find(v => !/zh-hk|yue/.test(this.lang(v))) || z[0] || null;
+  },
+  speak(text, kind) {
+    return new Promise(resolve => {
+      if (!this.ok) return resolve();
+      const u = new SpeechSynthesisUtterance(text);
+      const v = kind === 'zh' ? this.zh() : this.en();
+      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = kind === 'zh' ? 'zh-TW' : (D.s.accent === 'uk' ? 'en-GB' : 'en-US');
+      u.rate = kind === 'zh' ? 1 : D.s.rate;
+      let done = false;
+      const end = () => { if (!done) { done = true; clearTimeout(timer); resolve(); } };
+      // 有些瀏覽器不一定觸發 onend，用估計時間當保險
+      const timer = setTimeout(end, 2500 + text.length * (kind === 'zh' ? 350 : 140) / u.rate);
+      u.onend = end; u.onerror = end;
+      speechSynthesis.speak(u);
+      if (speechSynthesis.paused) speechSynthesis.resume();
+    });
+  },
+  cancel() { if (this.ok) speechSynthesis.cancel(); },
+};
+if (TTS.ok) {
+  TTS.load();
+  speechSynthesis.addEventListener('voiceschanged', () => { TTS.load(); if (route().name === 'settings') render(); });
+}
+async function sayNow(text, kind) {
+  if (P.on && !P.paused) pausePlay();
+  TTS.cancel();
+  await sleep(60);
+  if (!TTS.ok) return toast('這個瀏覽器不支援語音朗讀');
+  TTS.speak(text, kind);
+}
+
+/* ---------- 自動播放 ---------- */
+const P = { on: false, paused: false, from: 0, to: 0, pos: 0, step: '', run: 0 };
+let wakeLock = null;
+async function wake(on) {
+  try {
+    if (on && 'wakeLock' in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (e) {}
+}
+function playRange() {
+  const p = D.p;
+  if (p.mode === 'group') return [p.group * 10, p.group * 10 + 9];
+  if (p.mode === 'level') return [p.level * 250, p.level * 250 + 249];
+  return [0, N - 1];
+}
+function rangeLabel(from, to) {
+  if (to - from === 9) return `第 ${groupOf(from) + 1} 組`;
+  if (to - from === 249) return `${LV[levelOf(from)].join(' ')}（第 ${groupOf(from) + 1}–${groupOf(to) + 1} 組）`;
+  return '全部 1000 字';
+}
+function saveResume() { D.resume = { from: P.from, to: P.to, pos: P.pos }; save(); }
+function startPlay(from, to, pos) {
+  Object.assign(P, { on: true, paused: false, from, to, pos: pos || 0, step: '' });
+  saveResume();
+  resumePlay();
+}
+function resumePlay() {
+  const run = ++P.run;
+  P.paused = false;
+  wake(true);
+  TTS.cancel();
+  setTimeout(() => playLoop(run), 80);
+  draw();
+}
+function pausePlay() {
+  P.paused = true; P.run++; P.step = '';
+  TTS.cancel(); wake(false); draw();
+}
+function stopPlay() {
+  P.on = false; P.run++; P.step = '';
+  TTS.cancel(); wake(false); render();
+}
+function jump(d) {
+  P.pos = Math.min(P.to - P.from, Math.max(0, P.pos + d));
+  saveResume();
+  if (P.paused) draw(); else resumePlay();
+}
+async function playLoop(run) {
+  const alive = () => P.on && !P.paused && run === P.run;
+  while (alive()) {
+    const p = D.p, i = P.from + P.pos, w = W[i];
+    D.last = i;
+    for (let r = 0; r < p.reps; r++) {
+      P.step = 'w'; draw();
+      await TTS.speak(w.w, 'en'); if (!alive()) return;
+      await sleep(r < p.reps - 1 ? 600 : 350); if (!alive()) return;
+    }
+    if (p.zh && TTS.zh()) {
+      P.step = 'd'; draw();
+      await TTS.speak(defText(w), 'zh'); if (!alive()) return;
+      await sleep(300); if (!alive()) return;
+    }
+    if (p.ex) {
+      P.step = 'e'; draw();
+      await TTS.speak(plain(w.e), 'en'); if (!alive()) return;
+    }
+    markViewed(i);
+    P.step = ''; draw();
+    await sleep(p.gap * 1000); if (!alive()) return;
+    if (P.from + P.pos >= P.to) {
+      if (p.loop) P.pos = 0;
+      else { P.on = false; D.resume = null; save(); wake(false); render(); toast('播放完畢'); return; }
+    } else P.pos++;
+    saveResume();
+  }
+}
+// 只更新播放畫面，不打斷捲動
+function draw() {
+  document.querySelector('.tabs .live').classList.toggle('show', P.on && !P.paused);
+  if (route().name === 'play') $view.innerHTML = viewPlay();
+}
+document.addEventListener('visibilitychange', () => {
+  // 手機鎖屏或切到別的 App 時語音會被系統停掉，直接暫停，回來再按播放
+  if (document.hidden && P.on && !P.paused) pausePlay();
+});
+
+/* ---------- 畫面 ---------- */
+function speedBar() {
+  return `<div class="speed"><span>英文速度</span><div class="seg">${RATES.map(r =>
+    `<button data-set="s.rate" data-val="${r}" class="${D.s.rate === r ? 'on' : ''}">${rateLabel(r)}</button>`).join('')}</div></div>`;
+}
+function seg(path, cur, opts) {
+  return `<div class="seg">${opts.map(([v, label]) =>
+    `<button data-set="${path}" data-val="${v}" class="${cur === v ? 'on' : ''}">${label}</button>`).join('')}</div>`;
+}
+function sw(path, on) { return `<button class="sw ${on ? 'on' : ''}" data-set="${path}" data-val="${!on}" role="switch" aria-checked="${on}"></button>`; }
+
+function cardHTML(i, step) {
+  const w = W[i];
+  return `<article class="card">
+    <div class="w-row ${step === 'w' ? 'speaking' : ''}"><h1 class="word" lang="en" style="font-size:${Math.min(38, Math.floor(410 / w.w.length))}px">${esc(w.w)}</h1>
+      <button class="say" data-say="w" data-i="${i}" aria-label="唸單字">${ICON.spk}</button></div>
+    <div class="senses ${step === 'd' ? 'speaking' : ''}">${w.s.map(s => `<div><span class="pos">${esc(s[0])}</span>${esc(s[1])}</div>`).join('')}</div>
+    <div class="ex ${step === 'e' ? 'speaking' : ''}"><p class="en" lang="en">${hl(w.e)}</p>
+      <button class="say" data-say="e" data-i="${i}" aria-label="唸例句">${ICON.spk}</button></div>
+    <p class="zh">${esc(w.z)}</p>
+  </article>`;
+}
+
+function viewHome() {
+  const lv = D.uiLevel ?? levelOf(D.last);
+  const total = countViewed(0, N - 1);
+  let h = `<div class="hero"><h1>多益 1000 單字</h1><p>已看過 <b>${total}</b> / 1000 字</p>
+    <div class="meter"><i style="width:${total / 10}%"></i></div></div>
+    <a class="resume" href="#/w/${D.last}"><div class="r-txt"><small>繼續學習・第 ${groupOf(D.last) + 1} 組 ${D.last % 10 + 1}/10</small>
+      <b lang="en">${esc(W[D.last].w)}</b></div><span class="chev">›</span></a>
+    <div class="seg">${LV.map((l, k) => `<button data-set="uiLevel" data-val="${k}" class="${k === lv ? 'on' : ''}">${l.join(' ')}<small>${countViewed(k * 250, k * 250 + 249)}/250</small></button>`).join('')}</div>
+    <div class="groups">`;
+  for (let g = lv * 25; g < lv * 25 + 25; g++) {
+    const c = countViewed(g * 10, g * 10 + 9);
+    h += `<a class="grp ${c === 10 ? 'done' : ''}" href="#/w/${g * 10}"><b>第 ${g + 1} 組</b><em>${c === 10 ? '✓' : c + '/10'}</em>
+      <span lang="en">${esc(W[g * 10].w)} – ${esc(W[g * 10 + 9].w)}</span><div class="meter"><i style="width:${c * 10}%"></i></div></a>`;
+  }
+  return h + '</div>';
+}
+
+function viewCard(i) {
+  i = Math.min(N - 1, Math.max(0, i | 0));
+  D.last = i; markViewed(i); D.uiLevel = levelOf(i); save();
+  const g = groupOf(i), k = i % 10;
+  let dots = '';
+  for (let j = g * 10; j < g * 10 + 10; j++) dots += `<button data-act="go" data-i="${j}" class="${j === i ? 'cur' : ''} ${D.viewed[j] === '1' ? 'seen' : ''}" aria-label="第 ${j % 10 + 1} 個"><i></i></button>`;
+  return `<div class="bar"><a class="icon-btn" href="#/" aria-label="回首頁">${ICON.back}</a>
+      <div class="bar-title">第 ${g + 1} 組<small>${LV[levelOf(i)].join(' ')}・${k + 1} / 10</small></div>
+      <button class="icon-btn" data-act="playgroup" data-g="${g}" aria-label="自動播放本組">${ICON.play}</button></div>
+    <div class="dots">${dots}</div>
+    <div id="swipe">${cardHTML(i)}</div>
+    ${speedBar()}
+    <div class="pager"><button data-act="step" data-d="-1" ${i === 0 ? 'disabled' : ''}>‹ 上一個</button>
+      <button data-act="step" data-d="1" ${i === N - 1 ? 'disabled' : ''}>下一個 ›</button></div>`;
+}
+
+function viewPlay() {
+  const p = D.p;
+  if (P.on) {
+    const i = P.from + P.pos, len = P.to - P.from + 1;
+    const status = P.paused ? '已暫停' : ({ w: '唸單字', d: '唸中文意思', e: '唸例句' }[P.step] || '');
+    return `<div class="bar"><button class="icon-btn" data-act="stop" aria-label="結束播放">${ICON.close}</button>
+        <div class="bar-title">自動播放<small>${rangeLabel(P.from, P.to)}</small></div><span class="icon-btn"></span></div>
+      <div class="prog"><span>${P.pos + 1} / ${len}</span><div class="meter"><i style="width:${(P.pos + 1) / len * 100}%"></i></div><span>第 ${groupOf(i) + 1} 組</span></div>
+      ${cardHTML(i, P.paused ? '' : P.step)}
+      <div class="status">${status}</div>
+      <div class="controls"><button data-act="pjump" data-d="-1" aria-label="上一個">${ICON.prev}</button>
+        <button class="big" data-act="pp" aria-label="${P.paused ? '播放' : '暫停'}">${P.paused ? ICON.play : ICON.pause}</button>
+        <button data-act="pjump" data-d="1" aria-label="下一個">${ICON.next}</button></div>
+      ${speedBar()}
+      <p class="note" style="text-align:center;margin-top:14px">播放時請保持螢幕亮著，鎖屏或切換 App 會自動暫停。</p>`;
+  }
+  let groupOpts = '';
+  for (let g = p.level * 25; g < p.level * 25 + 25; g++) groupOpts += `<option value="${g}" ${g === p.group ? 'selected' : ''}>第 ${g + 1} 組：${esc(W[g * 10].w)} – ${esc(W[g * 10 + 9].w)}</option>`;
+  const r = D.resume;
+  return `<h2 class="title">自動播放</h2>
+    ${r ? `<div class="panel"><h3>繼續上次</h3><p>${rangeLabel(r.from, r.to)}・第 ${r.pos + 1} / ${r.to - r.from + 1} 字 <b lang="en">${esc(W[r.from + r.pos].w)}</b></p>
+      <button class="btn ghost" data-act="resume">繼續播放</button></div>` : ''}
+    <div class="panel"><h3>播放範圍</h3>
+      ${seg('p.mode', p.mode, [['group', '一組'], ['level', '一整級'], ['all', '全部']])}
+      ${p.mode !== 'all' ? `<label class="field">等級<select data-set="p.level">${LV.map((l, k) => `<option value="${k}" ${k === p.level ? 'selected' : ''}>${l.join(' ')}（第 ${k * 25 + 1}–${k * 25 + 25} 組）</option>`).join('')}</select></label>` : ''}
+      ${p.mode === 'group' ? `<label class="field">組別<select data-set="p.group">${groupOpts}</select></label>` : ''}
+    </div>
+    <div class="panel"><h3>播放內容</h3>
+      <div class="opt"><span>單字唸幾次</span>${seg('p.reps', p.reps, [[1, '1'], [2, '2'], [3, '3']])}</div>
+      <div class="opt"><span>唸中文意思</span>${sw('p.zh', p.zh)}</div>
+      <div class="opt"><span>唸例句</span>${sw('p.ex', p.ex)}</div>
+      <div class="opt"><span>每字之後停頓</span>${seg('p.gap', p.gap, [[0.5, '0.5'], [1, '1'], [2, '2'], [3, '3 秒']])}</div>
+      <div class="opt"><span>循環播放</span>${sw('p.loop', p.loop)}</div>
+      ${p.zh && TTS.voices.length && !TTS.zh() ? '<p class="note warn">這支手機沒有中文語音，會略過「唸中文意思」。</p>' : ''}
+    </div>
+    ${speedBar()}
+    <div style="height:16px"></div>
+    <button class="btn" data-act="start">${ICON.play.replace('width="26" height="26"', 'width="20" height="20" style="vertical-align:-4px"')} 開始播放</button>`;
+}
+
+let Q = '';
+function searchResults() {
+  const q = Q.trim().toLowerCase();
+  if (!q) return '<p class="hint">輸入英文或中文，搜尋 1000 個單字</p>';
+  let r = [];
+  if (/^[a-z\s\-'é]+$/.test(q)) {
+    const a = [], b = [];
+    W.forEach((w, i) => { const x = w.w.toLowerCase(); if (x.startsWith(q)) a.push(i); else if (x.includes(q)) b.push(i); });
+    r = a.concat(b);
+  } else W.forEach((w, i) => { if (w.s.some(s => s[1].includes(q))) r.push(i); });
+  if (!r.length) return '<p class="hint">找不到符合的單字</p>';
+  return r.slice(0, 80).map(i => { const w = W[i];
+    return `<a class="row" href="#/w/${i}"><b lang="en">${esc(w.w)}</b><span>${w.s.map(s => esc(s[0] + ' ' + s[1])).join('　')}</span><small>第 ${groupOf(i) + 1} 組</small></a>`; }).join('')
+    + (r.length > 80 ? `<p class="hint">還有 ${r.length - 80} 筆，請輸入更多字縮小範圍</p>` : '');
+}
+function viewSearch() {
+  return `<div class="search"><input id="q" type="search" placeholder="搜尋單字或中文意思" value="${esc(Q)}" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search"></div>
+    <div id="results">${searchResults()}</div>`;
+}
+
+function viewSettings() {
+  const ens = TTS.enList(), zh = TTS.zh(), total = countViewed(0, N - 1);
+  const loaded = TTS.voices.length > 0;
+  return `<h2 class="title">設定</h2>
+    <div class="panel"><h3>發音速度</h3>${speedBar().replace('<span>英文速度</span>', '')}
+      <p class="note">速度只調整英文；中文意思固定以正常速度唸出。</p></div>
+    <div class="panel"><h3>英文口音</h3>${seg('s.accent', D.s.accent, [['us', '美式'], ['uk', '英式']])}
+      <label class="field">語音<select data-set="s.voice"><option value="">自動選擇</option>${ens.map(v =>
+        `<option value="${esc(v.voiceURI)}" ${v.voiceURI === D.s.voice ? 'selected' : ''}>${esc(v.name)}</option>`).join('')}</select></label>
+      ${loaded && !ens.length ? `<p class="note warn">這支手機沒有${D.s.accent === 'uk' ? '英式' : '美式'}英文語音，會改用其他英文語音。</p>` : ''}
+      ${!TTS.ok ? '<p class="note warn">這個瀏覽器不支援語音朗讀，請改用 Safari 或 Chrome。</p>' : ''}
+      <div class="row-btns"><button data-act="test">試聽英文</button><button data-act="testzh">試聽中文</button></div>
+      <p class="note">中文語音：${zh ? esc(zh.name) : (loaded ? '<span class="warn">找不到，自動播放會略過唸中文</span>' : '載入中…')}</p></div>
+    <div class="panel"><h3>學習紀錄</h3><p>已看過 <b>${total}</b> / 1000 字</p>
+      <p class="note">紀錄只存在這支手機的瀏覽器裡。換手機前可以先匯出備份。</p>
+      <div class="row-btns"><button data-act="export">匯出備份</button><button data-act="import">匯入備份</button><button data-act="reset" class="danger">清除紀錄</button></div></div>
+    <div class="panel"><h3>加到手機主畫面</h3>
+      <p><b>iPhone</b>：用 Safari 開啟 → 點下方「分享」→「加入主畫面」。</p>
+      <p><b>Android</b>：用 Chrome 開啟 → 右上角「⋮」→「加到主畫面」或「安裝應用程式」。</p>
+      <p class="note">加到主畫面後，沒有網路也能使用。</p></div>
+    <p class="note" style="text-align:center">單字內容來源：刷刷鍋《多益一千單字表》・僅供個人學習</p>`;
+}
+
+/* ---------- 路由 ---------- */
+function route() { const [name, arg] = location.hash.replace(/^#\/?/, '').split('/'); return { name: name || 'home', arg }; }
+let lastKey = '';
+function render() {
+  const r = route();
+  const html = r.name === 'w' ? viewCard(+r.arg) : r.name === 'play' ? viewPlay() : r.name === 'search' ? viewSearch() : r.name === 'settings' ? viewSettings() : viewHome();
+  $view.innerHTML = html;
+  const tab = r.name === 'w' ? 'home' : r.name;
+  document.querySelectorAll('.tabs a').forEach(a => a.classList.toggle('on', a.dataset.tab === tab));
+  document.querySelector('.tabs .live').classList.toggle('show', P.on && !P.paused);
+  const key = r.name === 'w' ? 'w' : r.name;
+  if (key !== lastKey) window.scrollTo(0, 0);
+  lastKey = key;
+  if (r.name === 'w') bindSwipe(+r.arg);
+}
+function bindSwipe(i) {
+  const el = document.getElementById('swipe'); if (!el) return;
+  let x0 = null, y0 = 0;
+  el.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  el.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) goWord(i + (dx < 0 ? 1 : -1));
+  });
+}
+function goWord(i) { if (i >= 0 && i < N) location.replace('#/w/' + i); }
+window.addEventListener('hashchange', render);
+
+/* ---------- 操作 ---------- */
+function setPath(path, val) {
+  const ks = path.split('.'); let o = D;
+  for (let k = 0; k < ks.length - 1; k++) o = o[ks[k]];
+  o[ks[ks.length - 1]] = val;
+  if (path === 's.accent') D.s.voice = '';
+  if (path === 'p.level') D.p.group = val * 25;
+  save();
+}
+function parseVal(v) { return v === 'true' ? true : v === 'false' ? false : /^-?\d+(\.\d+)?$/.test(v) ? +v : v; }
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-set],[data-act],[data-say]');
+  if (!el || el.tagName === 'SELECT') return;
+  if (el.dataset.set) { setPath(el.dataset.set, parseVal(el.dataset.val)); return P.on && route().name === 'play' ? draw() : render(); }
+  if (el.dataset.say) {
+    const w = W[+el.dataset.i];
+    return sayNow(el.dataset.say === 'w' ? w.w : plain(w.e), 'en');
+  }
+  const act = el.dataset.act, i = +(route().arg || 0);
+  if (act === 'step') goWord(i + +el.dataset.d);
+  else if (act === 'go') goWord(+el.dataset.i);
+  else if (act === 'playgroup') {
+    const g = +el.dataset.g;
+    Object.assign(D.p, { mode: 'group', level: levelOf(g * 10), group: g }); save();
+    location.hash = '#/play';
+    startPlay(g * 10, g * 10 + 9, 0);
+  }
+  else if (act === 'start') { const [a, b] = playRange(); startPlay(a, b, 0); }
+  else if (act === 'resume' && D.resume) startPlay(D.resume.from, D.resume.to, D.resume.pos);
+  else if (act === 'pp') P.paused ? resumePlay() : pausePlay();
+  else if (act === 'pjump') jump(+el.dataset.d);
+  else if (act === 'stop') stopPlay();
+  else if (act === 'test') sayNow('This is a friendly reminder that smoking is prohibited.', 'en');
+  else if (act === 'testzh') { if (TTS.zh()) sayNow('友善提醒一下這裡禁菸。', 'zh'); else toast('這支手機沒有中文語音'); }
+  else if (act === 'export') exportData();
+  else if (act === 'import') document.getElementById('importFile').click();
+  else if (act === 'reset' && confirm('確定要清除所有學習紀錄嗎？這個動作無法復原。')) {
+    D.viewed = '0'.repeat(N); D.last = 0; D.resume = null; D.uiLevel = null; save(); render(); toast('已清除學習紀錄');
+  }
+});
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.tagName === 'SELECT' && el.dataset.set) { setPath(el.dataset.set, parseVal(el.value)); render(); }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'q') { Q = e.target.value; document.getElementById('results').innerHTML = searchResults(); }
+});
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  const r = route();
+  if (r.name === 'w' && e.key === 'ArrowRight') goWord(+r.arg + 1);
+  else if (r.name === 'w' && e.key === 'ArrowLeft') goWord(+r.arg - 1);
+  else if (r.name === 'play' && P.on && e.key === ' ') { e.preventDefault(); P.paused ? resumePlay() : pausePlay(); }
+});
+
+function exportData() {
+  const data = JSON.stringify({ app: 'toeic1000', version: 1, viewed: D.viewed, last: D.last, s: D.s, p: D.p });
+  const d = new Date(), stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+  a.download = `多益單字備份-${stamp}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+document.getElementById('importFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (d.app !== 'toeic1000' || typeof d.viewed !== 'string' || d.viewed.length !== N) throw 0;
+    D.viewed = d.viewed; D.last = Number.isInteger(d.last) ? d.last : 0;
+    if (d.s) D.s = Object.assign(D.s, d.s);
+    if (d.p) D.p = Object.assign(D.p, d.p);
+    save(); render(); toast('已匯入備份');
+  } catch (err) { toast('這不是有效的備份檔'); }
+});
+
+render();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
