@@ -161,6 +161,8 @@ mark{background:linear-gradient(transparent 58%,var(--mark) 58%);color:inherit;f
 .toast.show{opacity:.95}
 /* 畫面亮度：蓋一層半透明黑色，不擋操作 */
 #dim{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:20}
+.seg.book{margin-bottom:8px}
+.seg.book button{font-weight:600}
 .hero-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .bright{display:flex;align-items:center;gap:12px;margin-top:14px}
 .bright span{font-size:14px;color:var(--sub);flex:none}
@@ -180,10 +182,17 @@ mark{background:linear-gradient(transparent 58%,var(--mark) 58%);color:inherit;f
 <div id="dim"></div>
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 <script src="words.js"></script>
+<script src="words-biz.js"></script>
 <script>
 'use strict';
-const W = window.WORDS, N = W.length;
-const LV = [['Lv.1', '基礎'], ['Lv.2', '進階'], ['Lv.3', '中級'], ['Lv.4', '高階']];
+// 0–999 是 1000 字表（4 級），1000 之後接商業補充 250 字（當作第 5 級，獨立顯示）
+const MAIN = window.WORDS.length;
+const W = window.WORDS.concat(window.WORDS_BIZ || []), N = W.length;
+const LV = [['Lv.1', '基礎'], ['Lv.2', '進階'], ['Lv.3', '中級'], ['Lv.4', '高階'], ['商業', '補充']];
+const isBiz = i => i >= MAIN;
+const gLabel = g => g * 10 >= MAIN ? `補充第 ${g - MAIN / 10 + 1} 組` : `第 ${g + 1} 組`;
+const lvName = k => k === 4 ? '商業補充' : LV[k].join(' ');
+const lvGroups = k => k === 4 ? `補充第 1–${(N - MAIN) / 10} 組` : `第 ${k * 25 + 1}–${k * 25 + 25} 組`;
 const RATES = [0.5, 0.8, 1, 1.2];
 const KEY = 'toeic1000.v1';
 const $view = document.getElementById('view');
@@ -205,7 +214,8 @@ function load() {
   let d = {};
   try { d = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
   return {
-    viewed: (typeof d.viewed === 'string' && d.viewed.length === N) ? d.viewed : '0'.repeat(N),
+    // 舊紀錄只有 1000 字，補 0 接上新增的字
+    viewed: (typeof d.viewed === 'string' && /^[01]+$/.test(d.viewed)) ? (d.viewed + '0'.repeat(N)).slice(0, N) : '0'.repeat(N),
     last: Number.isInteger(d.last) && d.last >= 0 && d.last < N ? d.last : 0,
     uiLevel: Number.isInteger(d.uiLevel) ? d.uiLevel : null,
     s: Object.assign({ rate: 1, accent: 'us', voice: '', theme: 'auto', bright: 100 }, d.s),
@@ -317,9 +327,9 @@ function playRange() {
   return [0, N - 1];
 }
 function rangeLabel(from, to) {
-  if (to - from === 9) return `第 ${groupOf(from) + 1} 組`;
-  if (to - from === 249) return `${LV[levelOf(from)].join(' ')}（第 ${groupOf(from) + 1}–${groupOf(to) + 1} 組）`;
-  return '全部 1000 字';
+  if (to - from === 9) return gLabel(groupOf(from));
+  if (to - from === 249) return `${lvName(levelOf(from))}（${lvGroups(levelOf(from))}）`;
+  return `全部 ${N} 字`;
 }
 function saveResume() { D.resume = { from: P.from, to: P.to, pos: P.pos }; save(); }
 function startPlay(from, to, pos) {
@@ -412,17 +422,26 @@ function cardHTML(i, step) {
 
 function viewHome() {
   const lv = D.uiLevel ?? levelOf(D.last);
-  const total = countViewed(0, N - 1);
-  let h = `<div class="hero"><div class="hero-row"><h1>多益 1000 單字</h1>${themeBtn()}</div><p>已看過 <b>${total}</b> / 1000 字</p>
-    <div class="meter"><i style="width:${total / 10}%"></i></div></div>
-    <a class="resume" href="#/w/${D.last}"><div class="r-txt"><small>繼續學習・第 ${groupOf(D.last) + 1} 組 ${D.last % 10 + 1}/10</small>
+  const biz = lv === 4;
+  const [a, b] = biz ? [MAIN, N - 1] : [0, MAIN - 1];
+  const total = countViewed(a, b), size = b - a + 1;
+  const mainLv = D.last < MAIN ? levelOf(D.last) : 0;
+  let h = `<div class="hero"><div class="hero-row"><h1>多益 1000 單字</h1>${themeBtn()}</div><p>${biz ? '商業補充' : '1000 字表'}已看過 <b>${total}</b> / ${size} 字</p>
+    <div class="meter"><i style="width:${total / size * 100}%"></i></div></div>
+    <a class="resume" href="#/w/${D.last}"><div class="r-txt"><small>繼續學習・${gLabel(groupOf(D.last))} ${D.last % 10 + 1}/10</small>
       <b lang="en">${esc(W[D.last].w)}</b></div><span class="chev">›</span></a>
-    <div class="seg">${LV.map((l, k) => `<button data-set="uiLevel" data-val="${k}" class="${k === lv ? 'on' : ''}">${l.join(' ')}<small>${countViewed(k * 250, k * 250 + 249)}/250</small></button>`).join('')}</div>
+    <div class="seg book">
+      <button data-set="uiLevel" data-val="${biz ? mainLv : lv}" class="${biz ? '' : 'on'}">1000 字表<small>${countViewed(0, MAIN - 1)}/${MAIN}</small></button>
+      <button data-set="uiLevel" data-val="4" class="${biz ? 'on' : ''}">商業補充<small>${countViewed(MAIN, N - 1)}/${N - MAIN}</small></button></div>
+    ${biz ? '' : `<div class="seg">${LV.slice(0, 4).map((l, k) => `<button data-set="uiLevel" data-val="${k}" class="${k === lv ? 'on' : ''}">${l.join(' ')}<small>${countViewed(k * 250, k * 250 + 249)}/250</small></button>`).join('')}</div>`}
     <div class="groups">`;
-  for (let g = lv * 25; g < lv * 25 + 25; g++) {
+  const g0 = biz ? MAIN / 10 : lv * 25, g1 = biz ? N / 10 : lv * 25 + 25;
+  for (let g = g0; g < g1; g++) {
     const c = countViewed(g * 10, g * 10 + 9);
-    h += `<a class="grp ${c === 10 ? 'done' : ''}" href="#/w/${g * 10}"><b>第 ${g + 1} 組</b><em>${c === 10 ? '✓' : c + '/10'}</em>
-      <span lang="en">${esc(W[g * 10].w)} – ${esc(W[g * 10 + 9].w)}</span><div class="meter"><i style="width:${c * 10}%"></i></div></a>`;
+    // 補充字顯示主題，比單字範圍更好認
+    const sub = biz ? [...new Set(W.slice(g * 10, g * 10 + 10).map(w => w.t))].join('・') : `${W[g * 10].w} – ${W[g * 10 + 9].w}`;
+    h += `<a class="grp ${c === 10 ? 'done' : ''}" href="#/w/${g * 10}"><b>${gLabel(g)}</b><em>${c === 10 ? '✓' : c + '/10'}</em>
+      <span ${biz ? '' : 'lang="en"'}>${esc(sub)}</span><div class="meter"><i style="width:${c * 10}%"></i></div></a>`;
   }
   return h + '</div>';
 }
@@ -434,7 +453,7 @@ function viewCard(i) {
   let dots = '';
   for (let j = g * 10; j < g * 10 + 10; j++) dots += `<button data-act="go" data-i="${j}" class="${j === i ? 'cur' : ''} ${D.viewed[j] === '1' ? 'seen' : ''}" aria-label="第 ${j % 10 + 1} 個"><i></i></button>`;
   return `<div class="bar"><a class="icon-btn" href="#/" aria-label="回首頁">${ICON.back}</a><span class="icon-btn"></span>
-      <div class="bar-title">第 ${g + 1} 組<small>${LV[levelOf(i)].join(' ')}・${k + 1} / 10</small></div>
+      <div class="bar-title">${gLabel(g)}<small>${isBiz(i) ? esc(W[i].t) : LV[levelOf(i)].join(' ')}・${k + 1} / 10</small></div>
       ${themeBtn()}<button class="icon-btn" data-act="playgroup" data-g="${g}" aria-label="自動播放本組">${ICON.play}</button></div>
     <div class="dots">${dots}</div>
     <div id="swipe">${cardHTML(i)}</div>
@@ -450,7 +469,7 @@ function viewPlay() {
     const status = P.paused ? '已暫停' : ({ w: '唸單字', d: '唸中文意思', e: '唸例句' }[P.step] || '');
     return `<div class="bar"><button class="icon-btn" data-act="stop" aria-label="結束播放">${ICON.close}</button>
         <div class="bar-title">自動播放<small>${rangeLabel(P.from, P.to)}</small></div><span class="icon-btn"></span></div>
-      <div class="prog"><span>${P.pos + 1} / ${len}</span><div class="meter"><i style="width:${(P.pos + 1) / len * 100}%"></i></div><span>第 ${groupOf(i) + 1} 組</span></div>
+      <div class="prog"><span>${P.pos + 1} / ${len}</span><div class="meter"><i style="width:${(P.pos + 1) / len * 100}%"></i></div><span>${gLabel(groupOf(i))}</span></div>
       ${cardHTML(i, P.paused ? '' : P.step)}
       <div class="status">${status}</div>
       <div class="controls"><button data-act="pjump" data-d="-1" aria-label="上一個">${ICON.prev}</button>
@@ -460,14 +479,14 @@ function viewPlay() {
       <p class="note" style="text-align:center;margin-top:14px">播放時請保持螢幕亮著，鎖屏或切換 App 會自動暫停。</p>`;
   }
   let groupOpts = '';
-  for (let g = p.level * 25; g < p.level * 25 + 25; g++) groupOpts += `<option value="${g}" ${g === p.group ? 'selected' : ''}>第 ${g + 1} 組：${esc(W[g * 10].w)} – ${esc(W[g * 10 + 9].w)}</option>`;
+  for (let g = p.level * 25; g < p.level * 25 + 25 && g * 10 < N; g++) groupOpts += `<option value="${g}" ${g === p.group ? 'selected' : ''}>${gLabel(g)}：${esc(W[g * 10].w)} – ${esc(W[g * 10 + 9].w)}</option>`;
   const r = D.resume;
   return `<h2 class="title">自動播放</h2>
     ${r ? `<div class="panel"><h3>繼續上次</h3><p>${rangeLabel(r.from, r.to)}・第 ${r.pos + 1} / ${r.to - r.from + 1} 字 <b lang="en">${esc(W[r.from + r.pos].w)}</b></p>
       <button class="btn ghost" data-act="resume">繼續播放</button></div>` : ''}
     <div class="panel"><h3>播放範圍</h3>
       ${seg('p.mode', p.mode, [['group', '一組'], ['level', '一整級'], ['all', '全部']])}
-      ${p.mode !== 'all' ? `<label class="field">等級<select data-set="p.level">${LV.map((l, k) => `<option value="${k}" ${k === p.level ? 'selected' : ''}>${l.join(' ')}（第 ${k * 25 + 1}–${k * 25 + 25} 組）</option>`).join('')}</select></label>` : ''}
+      ${p.mode !== 'all' ? `<label class="field">等級<select data-set="p.level">${LV.map((l, k) => `<option value="${k}" ${k === p.level ? 'selected' : ''}>${lvName(k)}（${lvGroups(k)}）</option>`).join('')}</select></label>` : ''}
       ${p.mode === 'group' ? `<label class="field">組別<select data-set="p.group">${groupOpts}</select></label>` : ''}
     </div>
     <div class="panel"><h3>播放內容</h3>
@@ -486,7 +505,7 @@ function viewPlay() {
 let Q = '';
 function searchResults() {
   const q = Q.trim().toLowerCase();
-  if (!q) return '<p class="hint">輸入英文或中文，搜尋 1000 個單字</p>';
+  if (!q) return `<p class="hint">輸入英文或中文，搜尋 ${N} 個單字</p>`;
   let r = [];
   if (/^[a-z\s\-'é]+$/.test(q)) {
     const a = [], b = [];
@@ -495,7 +514,7 @@ function searchResults() {
   } else W.forEach((w, i) => { if (w.s.some(s => s[1].includes(q))) r.push(i); });
   if (!r.length) return '<p class="hint">找不到符合的單字</p>';
   return r.slice(0, 80).map(i => { const w = W[i];
-    return `<a class="row" href="#/w/${i}"><b lang="en">${esc(w.w)}</b><span>${w.s.map(s => esc(s[0] + ' ' + s[1])).join('　')}</span><small>第 ${groupOf(i) + 1} 組</small></a>`; }).join('')
+    return `<a class="row" href="#/w/${i}"><b lang="en">${esc(w.w)}</b><span>${w.s.map(s => esc(s[0] + ' ' + s[1])).join('　')}</span><small>${gLabel(groupOf(i))}</small></a>`; }).join('')
     + (r.length > 80 ? `<p class="hint">還有 ${r.length - 80} 筆，請輸入更多字縮小範圍</p>` : '');
 }
 function viewSearch() {
@@ -520,7 +539,7 @@ function viewSettings() {
       ${!TTS.ok ? '<p class="note warn">這個瀏覽器不支援語音朗讀，請改用 Safari 或 Chrome。</p>' : ''}
       <div class="row-btns"><button data-act="test">試聽英文</button><button data-act="testzh">試聽中文</button></div>
       <p class="note">中文語音：${zh ? esc(zh.name) : (loaded ? '<span class="warn">找不到，自動播放會略過唸中文</span>' : '載入中…')}</p></div>
-    <div class="panel"><h3>學習紀錄</h3><p>已看過 <b>${total}</b> / 1000 字</p>
+    <div class="panel"><h3>學習紀錄</h3><p>1000 字表已看過 <b>${countViewed(0, MAIN - 1)}</b> / ${MAIN} 字・商業補充 <b>${countViewed(MAIN, N - 1)}</b> / ${N - MAIN} 字</p>
       <p class="note">紀錄只存在這支手機的瀏覽器裡。換手機前可以先匯出備份。</p>
       <div class="row-btns"><button data-act="export">匯出備份</button><button data-act="import">匯入備份</button><button data-act="reset" class="danger">清除紀錄</button></div></div>
     <div class="panel"><h3>加到手機主畫面</h3>
@@ -634,8 +653,8 @@ document.getElementById('importFile').addEventListener('change', async e => {
   if (!f) return;
   try {
     const d = JSON.parse(await f.text());
-    if (d.app !== 'toeic1000' || typeof d.viewed !== 'string' || d.viewed.length !== N) throw 0;
-    D.viewed = d.viewed; D.last = Number.isInteger(d.last) ? d.last : 0;
+    if (d.app !== 'toeic1000' || typeof d.viewed !== 'string' || !/^[01]+$/.test(d.viewed)) throw 0;
+    D.viewed = (d.viewed + '0'.repeat(N)).slice(0, N); D.last = Number.isInteger(d.last) ? d.last : 0;
     if (d.s) D.s = Object.assign(D.s, d.s);
     if (d.p) D.p = Object.assign(D.p, d.p);
     save(); render(); toast('已匯入備份');
