@@ -1,5 +1,5 @@
 // 離線快取：先用快取顯示，同時在背景更新；改了檔案就把版本號加一
-const CACHE = 'toeic1000-v1';
+const CACHE = 'toeic1000-v2';
 const FILES = ['./', './index.html', './words.js', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
